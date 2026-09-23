@@ -26,7 +26,7 @@ Done when: a generated table regenerates from one command, and you can quote its
 
 ### 2. Write the style guide
 
-Follow [`references/style-guide.md`](references/style-guide.md). The guide lists which text is in scope, marks every rule as lint-enforced or reviewer-checked, gives every rule a real before and after with `file:line`, and states what text is never changed.
+Follow [`references/style-guide.md`](references/style-guide.md). The guide lists which text is in scope, marks every rule as lint-enforced or reviewer-checked, gives every rule a real before and after with a revision-pinned location, and states what text is never changed.
 
 Done when: every rule names its tier and its check, every example is quoted from the repository, the never-change list covers quoted text, code, numbers, identifiers, links, hedges and test-pinned strings, and the rules section fits in about 200 lines.
 
@@ -40,7 +40,7 @@ Done when: `prose:check` prints the per-scope, per-rule table; `rewrite:check` a
 
 ### 4. Calibrate, then fold the results into the tooling
 
-Tag the tree before the first rewrite (`git tag pre-rewrite`). Rewrite one small batch (about 10 files or sections) per content type, following [`references/batches.md`](references/batches.md). A human reads each calibration batch end to end.
+Tag the tree before the first rewrite and publish the tag (`git tag pre-rewrite && git push origin pre-rewrite`). Every later gate compares against it, so CI must fetch tags (`git fetch --tags`, or `fetch-depth: 0` with `fetch-tags: true` in GitHub Actions). Record the tagged commit hash in the lint config too, so a clone without tags can still resolve the baseline. Rewrite one small batch (about 10 files or sections) per content type, following [`references/batches.md`](references/batches.md). A human reads each calibration batch end to end.
 
 Calibration is where most of the quality gain happens. Turn every judgment call into a guide rule plus a lint check or word-list entry, merge that into the tooling branch, and only then start the bulk batches from the updated tooling.
 

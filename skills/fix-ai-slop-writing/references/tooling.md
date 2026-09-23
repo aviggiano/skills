@@ -15,9 +15,10 @@ The word list is one JSON file (for example `scripts/prose-words.json`) with `la
 Pipeline per prose unit:
 
 1. **Collect units** per scope: Markdown through a parser (remark, markdown-it, mistune), not regex over raw files; structured fields through the project's loader; UI strings through the language's compiler API.
-2. **Mask** before matching: quoted spans, code blocks and spans, link targets, URLs, math, identifiers, generated lines. Replace each masked span with spaces of equal length so offsets survive.
-3. **Split sentences** on the masked text.
-4. **Run the rules.** Each hit carries rule, scope, location, and the original (unmasked) sentence.
+2. **Run the identifier rules** (raw internal ids, unresolved cross-references) on the unmasked unit, before any mask hides them.
+3. **Mask** before matching: quoted spans, code blocks and spans, link targets, URLs, math, identifiers, generated lines. Replace each masked span with spaces of equal length so offsets survive, but keep sentence-final punctuation at the end of a quotation (`"Done." Restart` must still split after the quote).
+4. **Split sentences** on the masked text.
+5. **Run the rules.** Each hit carries rule, scope, location, and the original (unmasked) sentence.
 
 Output: a table of scope × rule counts, then the first N locations per fail-tier rule. Flags:
 
@@ -25,7 +26,7 @@ Output: a table of scope × rule counts, then the first N locations per fail-tie
 - `--files <paths>` and `--changed [<ref>]`: lint only these files or only the diff. This is the mode agents run on their own output, and it lets a disabled scope still block new text.
 - `--json`, `--all-locations`.
 
-**Two tiers.** Fail-tier rules exit 1 only in scopes listed under `enabled` in a config file, or in `--changed` mode. Report-tier rules are counted everywhere and never fail. Every rule is counted in every scope, so the table always shows the whole debt.
+**Two tiers.** Fail-tier rules exit 1 only in scopes listed under `enabled` in a config file, and in any scope in `--files` or `--changed` mode. Report-tier rules are counted everywhere and never fail. Every rule is counted in every scope, so the table always shows the whole debt.
 
 **The ratchet.** The config starts with `"enabled": []`:
 
@@ -77,9 +78,9 @@ The model never edits prose files directly. It writes **edit files**:
 Compares each file at a git ref with the worktree, or with edit files applied in memory (`--edits <dir>`, so the rewriter checks before anything is written). It works on a multiset of tokens per file or section:
 
 1. Normalize both sides through the shared library (Latin, notation, dashes, whitespace).
-2. Every number, version, unit, identifier, code span, link target, quoted span, product name and status marker of the before side must appear in the after side. Facts may move between paragraphs of one section. Quotes compare verbatim. An ordered pair (`2s → 5s`) is one token, so swapping its sides fails.
-3. A number new to the section fails. The rewriter does not get to invent precision.
-4. The count of each condition, negation and bound word (`not`, `no`, `never`, `only`, `unless`, `if`, `must`, `may`, `up to`, `at least`, `more than`, `below`) must not drop. A rise is a warning, since a split sentence repeats its condition. An added negation fails ("can be disabled" → "cannot be disabled" inverts a claim with no token lost).
+2. Every number, version, unit, identifier, code span, link target, quoted span, product name and status marker of the before side must appear in the after side. Facts may move between paragraphs of one section. A move to another section or file needs an explicit alignment map (`<source unit> → <destination unit>`), and the check compares the pair. Quotes compare verbatim. An ordered pair (`2s → 5s`) is one token, so swapping its sides fails.
+3. Numbers compare as a multiset: a number new to the section fails, and so does an extra occurrence of a number already there ("timeout is 10 seconds" gaining "retry 10 times"). The rewriter does not get to invent precision. When a split sentence legitimately repeats a value, the reviewer records it in an allowlist in the check report.
+4. First normalize every negation form to one token: `cannot`, `can't`, every `n't` contraction, `none`, `neither`, `nor`, `without`, `no longer`. Then the count of each condition, negation and bound word (`not`, `no`, `never`, `only`, `unless`, `if`, `must`, `may`, `up to`, `at least`, `more than`, `below`) must not drop. A rise is a warning, since a split sentence repeats its condition. An added negation fails ("can be disabled" → "cannot be disabled" inverts a claim with no token lost).
 5. Lists keep their length and are compared item by item, or through an explicit alignment map for reorderings.
 
 `--report <file>` writes JSON with every token checked; the PR description quotes its summary.

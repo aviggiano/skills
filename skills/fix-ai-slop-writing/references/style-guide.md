@@ -36,7 +36,7 @@ After: "The CLI is fast. It caches every artifact locally."
 Check: regex for U+2014, or a spaced hyphen or en-dash between two words, outside quotes, code and math.
 ```
 
-The before is real text from the repository with its `file:line`, as of the day the guide is written. An invented example teaches the rewriter an invented problem.
+The before is real text from the repository, located by a revision-pinned reference (`docs/guides/install.md@<sha>:42`, or a permalink). A bare `file:line` goes wrong as soon as the reflow commit moves lines. An invented example teaches the rewriter an invented problem.
 
 ### Mechanical tier (Lint, fails in enabled scopes, a script can fix it)
 
@@ -47,12 +47,12 @@ The before is real text from the repository with its `file:line`, as of the day 
 | M3 | A list item or caption with inconsistent case or terminal punctuation | One convention, stated in the guide |
 | M4 | Mixed notation for one thing (`>=` and `≥`, `->` and `→`, `~` and "about", `x` and `×`) | One set; convert only in notation position, never in code or quotes |
 | M5 | Unknown lead-in labels (`Note:`, `TL;DR:`, `Key takeaway:`) | A fixed label set per document type |
-| M6 | Empty intensifiers | Auto-delete `genuinely`, `literally`, `actually`, `truly`, `the very`; flag `simply`, `just`, `merely`, `really` for review, since some carry "with no other cause". Test every auto-delete against idioms that contain it ("if at all", "just in time") |
+| M6 | Empty intensifiers | Flag `genuinely`, `literally`, `actually`, `truly`, `simply`, `just`, `merely`, `really`. Some carry meaning ("genuinely random" means not pseudorandom; "simply" can mean "with no other cause"). Move a word to the auto-delete list only after a corpus scan shows no meaningful use, and test every auto-delete against idioms that contain it ("if at all", "just in time") |
 | M7 | Mixed spelling conventions | One convention; a stem list with identifiers and quotes excluded |
 
-Add project-specific fail rules as they appear: a raw internal id in reader-facing prose, a cross-reference that does not resolve, a product name spelled two ways, a title over N characters.
+Add project-specific fail rules as they appear: a raw internal id in reader-facing prose (it runs on the unmasked unit, since the masks hide identifiers), a cross-reference that does not resolve, a product name spelled two ways, a title over N characters.
 
-### Review tier (the rewriter applies it, a reviewer checks it, the lint counts it)
+### Review tier (the rewriter applies it and a reviewer checks it; the parts marked Lint fail like the mechanical tier, and the lint counts the rest)
 
 - **R1. One idea per sentence.** (Review; the cap is Lint) Target 20 words. Hard cap: 25 in UI copy, 30 in long-form prose, citations excluded. Split at `;` and at a second independent clause. Every split sentence repeats or inherits its condition. List the words not to split at when they bind a condition to a noun (often `which` and a temporal `while`). Splitting too far is a defect too: a verbless stub or a sentence that lost its subject is worse than a 28-word sentence.
 - **R2. Negation tails, case by case.** (Review) Keep ", not Y" and "rather than" when they mark a scope boundary or a hedge. Restructure the aphoristic ones ("It's not a bug, it's a feature").
@@ -85,7 +85,7 @@ State each glossary policy in a form the lint can check. "Expand the old term on
 ## 6. Labels and layout
 
 - A fixed label set per document type, for example `Warning:` and `Note:` only, or admonition blocks only.
-- One sentence per line in Markdown source (semantic line breaks). The rendered output does not change, and a diff shows each sentence on its own line, which is what makes a 25-file batch reviewable.
+- One sentence per line in Markdown source (semantic line breaks). A diff then shows each sentence on its own line, which is what makes a 25-file batch reviewable. First confirm that the renderer treats a soft line break as a space: a `breaks: true` option or a plugin such as `remark-breaks` turns each line into a hard break. Where it does, skip this layout or disable the option, and keep a render-equivalence test in the reflow tool.
 - Numbered steps: one outcome per step, not one keystroke per step.
 
 ## 7. Rewrite workflow and open items

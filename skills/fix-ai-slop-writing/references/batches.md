@@ -48,7 +48,7 @@ Tell both reviewers: **files not yet rewritten are not a standard to match.** Ha
 
 ## Gates on the last commit
 
-Build, unit tests, `prose:check` (no fail-tier hit in an enabled scope, and zero in the batch's files), `prose:fix --check` and `prose:reflow --check` on the batch's files, end-to-end UI tests if the batch touches UI copy, and `rewrite:check --base pre-rewrite <batch paths>` with zero failures.
+Build, unit tests, `prose:check` (no fail-tier hit in an enabled scope), `prose:check --files <batch paths>` (which fails on any fail-tier hit in those files even while their scope is disabled), `prose:fix --check` and `prose:reflow --check` on the batch's files, end-to-end UI tests if the batch touches UI copy, and `rewrite:check --base pre-rewrite <batch paths>` with zero failures.
 
 ## PR description
 
